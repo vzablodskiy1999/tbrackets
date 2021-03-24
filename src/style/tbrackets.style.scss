@@ -1,0 +1,175 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap');
+
+.tbrackets {
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 400;
+    padding: 0 20px;
+
+    & * {
+        box-sizing: border-box;
+    }
+
+    &-rounds {
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+        margin-top: 20px;
+
+        .tbrackets-round:not(:last-child) {
+            margin-right: calc(var(--base-size) * 2px);
+        }
+    }
+
+    &-round {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: calc(var(--base-size) * 4px);;
+        
+        &__title {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: -20px;
+        }
+
+        &__matches {
+            height: 100%;
+
+            .tbrackets-match:only-child:after, 
+            .tbrackets-match:only-child:before {
+                display: none;
+            }
+
+            .tbrackets-match:only-child .tbrackets-team:first-child::before {
+                width: 100%;
+            }
+        }
+    }
+
+    &-match {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        width: 100%;
+        height: calc(100% / var(--matches-amount));
+        cursor: pointer;
+
+        &__date {
+            position: absolute;
+            top: calc(50% - 50px);
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        &__name {
+            position: absolute;
+            right: -50px;
+            background: white;
+            z-index: 3;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        &__teams {
+            border: 1px solid;
+            border-radius: 5px;
+        }
+
+        &:nth-child(2n - 1):after {
+            content: '';
+            position: absolute;
+            width: 1px;
+            height: 50%;
+            background: black;
+            bottom: 0;
+            left: calc(100% + var(--base-size) * 1px);
+            z-index: 1;
+        }
+
+        &:nth-child(2n - 1):before {
+            content: '';
+            position: absolute;
+            width: calc(var(--base-size) * 1px);
+            height: 0.5px;
+            background: black;
+            bottom: -0.5px;
+            left: calc(100% + var(--base-size) * 1px);
+            z-index: 1;
+        }
+
+        &:nth-child(2n):after {
+            content: '';
+            position: absolute;
+            width: 1px;
+            height: 50%;
+            background: black;
+            top: 0;
+            left: calc(100% + var(--base-size) * 1px);
+            z-index: 1;
+        }
+
+        .tbrackets-team:first-child::before {
+            content: '';
+            position: absolute;
+            width: calc(100% + var(--base-size) * 1px + 2px);
+            height: 0.5px;
+            background: black;
+            bottom: -0.5px;
+            left: 0;
+            z-index: 1;
+        }
+
+        .tbrackets-team:first-child {
+            border-radius: 5px 5px 0 0;
+        }
+
+        .tbrackets-team:last-child {
+            border-radius: 0 0 5px 5px;
+        }
+    }
+
+    &-team {
+        position: relative;
+        width: 100%;
+        height: calc(var(--base-size) * 0.5px);
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        transition: box-shadow .3s;
+
+        &__score {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: calc(var(--base-size) * 0.5px);
+            border-right: 1px solid;
+        }
+
+        &__name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-left: 8px;
+            font-size: 14px;
+        }
+
+        &--looser {
+            background: #dcdcdc;
+        }
+
+        &--winner {
+            font-weight: bold;
+        }
+
+        &:hover {
+            z-index: 2;
+            box-shadow: 1px 1px 5px;
+        }
+    }
+}
