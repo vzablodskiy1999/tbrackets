@@ -4,7 +4,7 @@ import '../style/tbrackets.style.scss';
 import { BracketsContext } from '../context/tbrackets.context';
 import { TBracketRound } from './TBracketRound.component';
 import { generateRandomId, isPowOfTwo } from '../utils/common.utils';
-import { BASE_BRACKET_SIZE } from '../constants/shared.constants';
+import { BASE_BRACKET_SIZE, DEFAULT_SCORE_TO_WIN } from '../constants/shared.constants';
 
 export const TBracket = (props: TBracketConfig) => {
   const [config, setConfig] = useState<TBracketConfig>({...props});
@@ -24,23 +24,52 @@ export const TBracket = (props: TBracketConfig) => {
     return props.matchNameGenerator ? props.matchNameGenerator(roundNumber, matchNumber) : `R${roundNumber}M${matchNumber}`;
   }
 
-  const generateTeamName = (matches: TBracketMatchConfig): string => {
-    const team1 = matches?.teams?.[0];
-    const team2 = matches?.teams?.[1];
+  const generateTeamName = (match: TBracketMatchConfig): string => {
+    const team1 = match?.teams?.[0];
+    const team2 = match?.teams?.[1];
     let response = '';
 
     if (team1 && team1.name && (!team2 || !team2.name || team2.name === TBracketTeamStatus.TBD)) {
       response += team1.name;
     } else if (team2 && team2.name && (!team1 || !team1.name || team1.name === TBracketTeamStatus.TBD)) {
       response += team2.name;
-    } else if (matches?.matchName) {
-      response += `Winner of ${matches?.matchName}`
+    } else if (match?.matchName) {
+      response += `Winner of ${match?.matchName}`
     } else {
       response += TBracketTeamStatus.TBD;
     }
 
     return response;
   };
+
+  const generateMatchStatus = (match: TBracketMatchConfig, scoreToWin: number): TBracketMatchStatus => {
+    const team1 = match?.teams?.[0];
+    const team2 = match?.teams?.[1];
+    
+
+    if (typeof team1?.score === 'number' && typeof team2?.score === 'number') {
+      if (team1.score >= scoreToWin || team2.score >= scoreToWin) {
+        return TBracketMatchStatus.FINISHED;
+      }
+    }
+
+    return TBracketMatchStatus.PENDING;
+  }
+
+  const generateTeamStatus = (scoreToWin: number, currTeam?: TBracketTeamConfig, oppositeTeam?: TBracketTeamConfig): TBracketTeamStatus => {
+    if (currTeam?.teamStatus) return currTeam.teamStatus;
+    if (typeof currTeam?.score === 'number' && typeof oppositeTeam?.score === 'number') {
+      if (currTeam.score >= scoreToWin && oppositeTeam.score < currTeam.score) {
+        return TBracketTeamStatus.WINNER;
+      } else if (oppositeTeam.score >= scoreToWin && currTeam.score < oppositeTeam.score) {
+        return TBracketTeamStatus.LOOSER;
+      } else if (oppositeTeam.score === currTeam.score && currTeam.score === scoreToWin && oppositeTeam.score === scoreToWin) {
+        return TBracketTeamStatus.DRAW;
+      }
+    } 
+
+    return TBracketTeamStatus.PENDING;
+  }
 
   /* 
     Generator depends on array of first round, passing rounds props make sure you have rounds[0].matches.length === pow of 2 (ex. 2, 4, 8, 16, 64...).
@@ -81,39 +110,47 @@ export const TBracket = (props: TBracketConfig) => {
       });
     };    
 
-    let matchIterator = 1;
     for (let i = 0; i < rounds.length; i ++) {
-      const item = {
-        title: props.rounds?.[i]?.title,
-        id: props.rounds?.[i]?.id ?? generateRandomId(),
+      const roundTitle = props.rounds?.[i]?.title;
+      const roundId = props.rounds?.[i]?.id ?? generateRandomId();
+
+      const round = {
+        title: roundTitle,
+        id: roundId,
         matches: [],
       } as TBracketRoundConfig;
+
       for (let y = 0; y < rounds[i].teams; y ++) {
-        item.matches.push({
-          id: props.rounds?.[i]?.matches?.[y]?.id ?? generateRandomId(),
-          date: props.rounds?.[i]?.matches?.[y]?.date,
-          matchName: props.rounds?.[i]?.matches?.[y]?.matchName ?? generateMatchName(i + 1, y + 1),
-          status: props.rounds?.[i]?.matches?.[y]?.status ?? TBracketMatchStatus.PENDING,
+        const matchId = props.rounds?.[i]?.matches?.[y]?.id ?? generateRandomId();
+        const matchDate = props.rounds?.[i]?.matches?.[y]?.date;
+        const matchName = props.rounds?.[i]?.matches?.[y]?.matchName ?? (!props.disableMatchName && generateMatchName(i + 1, y + 1));
+        const scoreToWin = props.rounds?.[i]?.matches?.[y]?.scoreToWin ?? props.scoreToWin ?? DEFAULT_SCORE_TO_WIN;
+        const matchStatus = generateMatchStatus(props.rounds?.[i]?.matches?.[y], scoreToWin);
+
+        round.matches.push({
+          id: matchId,
+          date: matchDate,
+          matchName: matchName,
+          scoreToWin: scoreToWin,
+          status: matchStatus,
           teams: [
-            props.rounds?.[i]?.matches?.[y]?.teams?.[0] ?? {
-              name: generateTeamName(result[i - 1]?.matches?.[y * 2]),
-              id: generateRandomId(),
-              score: props.rounds?.[i]?.matches?.[y]?.teams?.[0] || 0,
-              teamStatus: TBracketTeamStatus.TBD,
+            {
+              name: props.rounds?.[i]?.matches?.[y]?.teams?.[0]?.name ?? generateTeamName(result[i - 1]?.matches?.[y * 2]),
+              id: props.rounds?.[i]?.matches?.[y]?.teams?.[0]?.id ?? generateRandomId(),
+              score: props.rounds?.[i]?.matches?.[y]?.teams?.[0]?.score || 0,
+              teamStatus: generateTeamStatus(scoreToWin, props.rounds?.[i]?.matches?.[y]?.teams?.[0], props.rounds?.[i]?.matches?.[y]?.teams?.[1]),
             } as TBracketTeamConfig,
-            props.rounds?.[i]?.matches?.[y]?.teams?.[1] ?? {
-              name: generateTeamName(result[i - 1]?.matches?.[y * 2 + 1]),
-              id: generateRandomId(),
-              score: props.rounds?.[i]?.matches?.[y]?.teams?.[1] || 0,
-              teamStatus: TBracketTeamStatus.TBD,
+            {
+              name: props.rounds?.[i]?.matches?.[y]?.teams?.[1]?.name ?? generateTeamName(result[i - 1]?.matches?.[y * 2]),
+              id: props.rounds?.[i]?.matches?.[y]?.teams?.[1]?.id ?? generateRandomId(),
+              score: props.rounds?.[i]?.matches?.[y]?.teams?.[1]?.score || 0,
+              teamStatus: generateTeamStatus(scoreToWin, props.rounds?.[i]?.matches?.[y]?.teams?.[1], props.rounds?.[i]?.matches?.[y]?.teams?.[0])
             } as TBracketTeamConfig,
           ]
         } as TBracketMatchConfig);
-
-        matchIterator++;
       }
 
-      result.push(item)
+      result.push(round)
     };
 
     setConfig({...props, rounds: result});
@@ -127,8 +164,8 @@ export const TBracket = (props: TBracketConfig) => {
     <BracketsContext.Provider value={config}>
       <div className="tbrackets" style={bracketsStyle}>
         <div className="tbrackets-rounds">
-          {config.rounds.map((round, idx) => 
-            <TBracketRound {...round} key={round.id} />
+          {config.rounds.map((round) => 
+            <TBracketRound {...round} key={round.id || generateRandomId()} />
           )}
         </div>
       </div>

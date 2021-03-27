@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { TBracketMatchStatus, TBracketRoundConfig } from '../models/tbrackets.model';
+import { generateRandomId } from '../utils/common.utils';
 import { TBracketMatch } from './TBracketMatch.component';
 
 export const TBracketRound = (props: TBracketRoundConfig) => {
@@ -21,7 +22,7 @@ export const TBracketRound = (props: TBracketRoundConfig) => {
             }
             <div className="tbrackets-round__matches">
                 {props?.matches?.map((match) => 
-                    <TBracketMatch {...match} key={match.id} />
+                    <TBracketMatch {...match} key={match.id || generateRandomId()} />
                 )}
             </div>
         </div>

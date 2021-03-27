@@ -4,77 +4,61 @@ import { TBracketMatchStatus, TBracketConfig } from './models/tbrackets.model';
 
 function App() {
   const props: TBracketConfig = {
-    isLoading: false,
     rounds: [
       {
         title: "Round 1",
-        id: '1',
         matches: [
           {
-            id: 'test Id',
             date: new Date(),
-            status: TBracketMatchStatus.FINISHED,
             teams: [
               {
-                id: 'te41st id',
-                name: 'Lions',
-                score: 1,
-              },
-            ]
-          },
-          {
-            id: 'test id1',
-            date: new Date(),
-            status: TBracketMatchStatus.PENDING,
-            teams: [
-              {
-                id: '1254',
-                name: 'Pantheras',
-                score: 1,
-              }
-            ]
-          },
-          {
-            id: 'test I414d',
-            date: new Date(),
-            status: TBracketMatchStatus.FINISHED,
-            teams: [
-              {
-                id: 'test22d',
-                name: 'Lions',
+                name: 'Tigers',
                 score: 1,
               },
               {
-                id: 'test11d',
-                name: 'Cats',
+                name: 'Lions',
                 score: 0,
               }
             ]
           },
           {
-            id: 'test id14141',
             date: new Date(),
-            status: TBracketMatchStatus.PENDING,
             teams: [
               {
-                id: '1242',
-                name: 'Turtles',
+                name: 'Pigs',
                 score: 1,
               },
               {
-                id: '124',
-                name: 'Pantheras',
-                score: 1,
+                name: 'Monkeyband',
+                score: 0,
               }
             ]
           }
         ]
       },
+      {
+        title: "Final",
+        matches: [
+          {
+            date: new Date(),
+            teams: [
+              {
+                name: 'Tigers',
+                score: 0,
+              },
+              {
+                name: 'Pigs',
+                score: 0,
+              }
+            ]
+          }
+        ]
+      }
     ],
-    onTeamClick: (t, p) => {
-      console.log(t);
-      console.log(p);
-      
+
+    onTeamClick: (t) => {
+      props.rounds?.[0]?.matches?.[0].teams?.[0].score && props.rounds[0].matches[0].teams[0].score ++;
+      console.log(props);
       
     }
   };
