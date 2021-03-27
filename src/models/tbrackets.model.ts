@@ -1,6 +1,6 @@
 export interface TBracketRoundConfig {
     title?: string;
-    id: string;
+    id?: string;
     matches: TBracketMatchConfig[];
 }
 
@@ -35,9 +35,10 @@ export interface TBracketTeamConfig {
 
 export interface TBracketConfig {
     rounds: TBracketRoundConfig[];
-    isLoading: boolean;
     baseSize?: number;
     disableBracketsGenerator?: boolean;
+    scoreToWin?: number;
+    disableMatchName?: boolean;
     matchNameGenerator?: (roundNumber: number, matchNumber: number) => string;
     onTeamClick?: (team?: TBracketTeamConfig, props?: TBracketConfig) => void;
     onMatchClick?: (match?: TBracketMatchConfig, props?: TBracketConfig) => void;
